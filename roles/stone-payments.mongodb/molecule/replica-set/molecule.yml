@@ -1,0 +1,51 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint:
+  name: yamllint
+platforms:
+  - name: mongo1
+    image: centos:7.5.1804
+    command: /usr/sbin/init
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    networks:
+      - name: molecule
+        ipv4_address: 192.168.56.11
+        aliases:
+          - mongo1
+  - name: mongo2
+    image: centos:7.4.1708
+    command: /usr/sbin/init
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    networks:
+      - name: molecule
+        ipv4_address: 192.168.56.12
+        aliases:
+          - mongo2
+  - name: mongo3
+    image: ubuntu:xenial
+    command: /sbin/init
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    networks:
+      - name: molecule
+        ipv4_address: 192.168.56.13
+        aliases:
+          - mongo3
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+scenario:
+  name: replica-set
+verifier:
+  name: testinfra
+  lint:
+    name: flake8

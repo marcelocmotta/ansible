@@ -1,0 +1,31 @@
+---
+- name: Prepare
+  hosts: all
+  become: true
+  roles:
+    - role: stone-payments.epel
+      when: ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux"
+  tasks:
+    - name: test if firewalld unit is loaded
+      shell: systemctl show firewalld --property=LoadState
+      changed_when: false
+      failed_when: false
+      register: firewalld_LoadState
+    - name: enable firewalld
+      service:
+        name: firewalld
+        state: started
+        enabled: true
+      when: firewalld_LoadState.stdout == "LoadState=loaded"
+
+    - name: test if ufw unit is loaded
+      shell: systemctl show ufw --property=LoadState
+      changed_when: false
+      failed_when: false
+      register: ufw_LoadState
+    - name: enable ufw
+      service:
+        name: ufw
+        state: started
+        enabled: true
+      when: ufw_LoadState.stdout == "LoadState=loaded"

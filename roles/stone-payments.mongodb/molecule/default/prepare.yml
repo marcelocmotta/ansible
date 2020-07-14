@@ -1,0 +1,7 @@
+---
+- name: Prepare
+  hosts: all
+  roles:
+    - role: stone-payments.epel
+      when: ansible_distribution == "CentOS" or ansible_distribution == "Red Hat Enterprise Linux"
+  tasks: []

@@ -1,0 +1,55 @@
+---
+- debug:
+    msg:
+      "mongodb_replSet_master: {{mongodb_replSet_master}}, 
+      ansible_all_ipv4_addresses: {{ansible_all_ipv4_addresses}}, 
+      isMaster: {{ True if mongodb_replSet_master in ansible_all_ipv4_addresses else False }}"
+    verbosity: 2
+
+- name: determine if is replica set master
+  set_fact:
+    mongodb_replSet_isMaster: "{{ True if mongodb_replSet_master in ansible_all_ipv4_addresses else False }}"
+
+- block:
+  - name: install MongoDB (RedHat)
+    include: install.rpm.yml
+    when: ansible_os_family == 'RedHat'
+
+  - name: install MongoDB (Debian/Ubuntu)
+    include: install.deb.yml
+    when: ansible_os_family == 'Debian'
+
+  - name: common installation steps
+    include: install.common.yml
+
+  - name: configure Linux Security Modules for MongoDB
+    include: lsm.yml
+    when: mongodb_install_lsm
+    tags: mongodb_install_lsm
+
+  - name: configure firewall for MongoDB
+    include: firewall.yml
+    when: mongodb_install_firewall and mongodb_conf_bindIp != "127.0.0.1"
+    tags: mongodb_install_firewall
+  when: mongodb_install
+  tags: mongodb_install
+
+- name: configure MongoDB daemon
+  include: configure.yml
+  tags: mongodb_configure
+
+- name: configure MongoDB admin user
+  include: admin.yml
+  when: mongodb_replSet_isMaster or not mongodb_replSet_enabled
+  tags: mongodb_admin
+
+- name: configure MongoDB replication
+  include: replica.yml
+  when: mongodb_replSet_enabled
+  tags: mongodb_replica
+
+- name: run mongoshell commands
+  command: mongo {{ item.key }} --eval "{{ item.value|join(';') }}"
+  with_dict: "{{ mongodb_shell_commands }}"
+  when: mongodb_shell_run
+  tags: mongodb_shell

@@ -1,0 +1,27 @@
+---
+- name: Include common prepare
+  import_playbook: provisioning/AWS/prepare.yml
+
+- name: Prepare RHEL
+  hosts: rhel_family
+  tasks:
+    - name: Enable EPEL repository
+      yum:
+        name: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-\
+          {{ ansible_distribution_major_version }}.noarch.rpm"
+        state: 'present'
+      register: status
+      until: status is succeeded
+      become: true
+
+- name: Prepare java and solr
+  hosts: all
+  roles:
+    - role: lean_delivery.java
+    - role: lean_delivery.solr_standalone
+    - role: lean_delivery.solr_hybris_config
+  vars:
+    solr_change_default_password: false
+    solr_auth_configure: false
+    solr_use_java_version_8: false
+    solr_patch_transport: web

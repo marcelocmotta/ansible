@@ -1,0 +1,24 @@
+---
+- name: copy service unit and script
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - src: "nohugepages.sh"
+      dest: "/usr/local/lib/nohugepages.sh"
+      mode: "0755"
+    - src: "nohugepages.service"
+      dest: "/etc/systemd/system/nohugepages.service"
+      mode: "0644"
+  notify:
+    - reload systemd
+    - restart nohugepages
+
+- meta: flush_handlers
+
+- name: ensure standalone enable
+  service:
+    name: nohugepages
+    enabled: true
+  when: nohugepages_standalone

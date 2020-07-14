@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  roles:
+    - role: stone-payments.mongodb
+  vars:
+    mongodb_conf_bindIp: "0.0.0.0"
