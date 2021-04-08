@@ -1,9 +1,0 @@
-- name: reload systemd
-  shell:
-    systemctl daemon-reload
-
-- name: restart nohugepages
-  service:
-    name: nohugepages
-    state: restarted
-  when: nohugepages_standalone

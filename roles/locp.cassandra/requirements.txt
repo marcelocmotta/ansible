@@ -1,6 +1,0 @@
-ansible==2.10.0
-ansible-lint==4.2.0
-docker==4.2.0
-flake8==3.8.1
-molecule==3.0.4
-testinfra==5.0.0
